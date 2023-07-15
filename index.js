@@ -17,16 +17,33 @@ bot.command('start', ctx => {
 bot.on('text', async (ctx) => {
     const chatText = ctx.message.text;
 
+    console.log("==============");
     // Extract symbol, action, entryLow, and entryHigh
-    const symbolActionRangeMatch = chatText.match(/([A-Z]+)\s+(SELL|BUY) NOW (\d+(?:\.\d+)?) - (\d+(?:\.\d+)?)/);
-    if (symbolActionRangeMatch) {
-        symbol = symbolActionRangeMatch[1];
-        action = symbolActionRangeMatch[2];
-        entryLow = parseFloat(symbolActionRangeMatch[3]);
-        entryHigh = parseFloat(symbolActionRangeMatch[4]);
+    const symbolMatches = chatText.match(/(XAUUSD|XAU\/USD)/i);
+    if (symbolMatches) {
+        symbol = symbolMatches[0].replace("/", "");
+        console.log("SYMBOL: " + symbol);
     }
 
-    // Extract tp1, tp2, and sl
+    // Extract action
+    const actionMatches = chatText.match(/(BUY|SELL)/i);
+    if (actionMatches) {
+        action = actionMatches[0];
+        console.log("ACTION: " + action);
+    }
+
+    // Extract entryHigh and entryLow
+    const entryPriceMatches = chatText.match(/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)/);
+    if (entryPriceMatches) {
+        entryLow = parseFloat(action === 'BUY' ? entryPriceMatches[1] : entryPriceMatches[2]);
+        entryHigh = parseFloat(action === 'BUY' ? entryPriceMatches[2] : entryPriceMatches[1]);
+        console.log('Entry Low:', entryLow);
+        console.log('Entry High:', entryHigh);
+    } else {
+        console.log('Entry low and entry high not found.');
+    }
+
+    // Extract TP levels
     const tpSlMatches = chatText.match(/TP (\d+(?:\.\d+)?)|SL (\d+(?:\.\d+)?)/g);
     if (tpSlMatches) {
         for (const match of tpSlMatches) {
@@ -44,30 +61,41 @@ bot.on('text', async (ctx) => {
     }
 
     // Calculate lot size per entry
-    entryLotSize = lotSize / entryCount;
+    const entryLotSize = lotSize / entryCount;
+    console.log("entryLotSize: " + entryLotSize);
 
     // Calculate individual entry step
     const entryStep = (entryHigh - entryLow) / (entryCount - 1);
+    console.log("entryStep: " + entryStep);
+
+    // Set default values for TP1 and TP2 if they are undefined
+    if (typeof tp1 === 'undefined') {
+        tp1 = entryLow + 20; // Set default TP1 as 20 pips above entryLow
+    }
+    if (typeof tp2 === 'undefined') {
+        tp2 = entryLow + 40; // Set default TP2 as 40 pips above entryLow
+    }
+
+    // Reverse the entry array when the action is "SELL"
+    const entries = action === 'SELL' ? [...Array(entryCount)].map((_, i) => entryLow + (entryStep * (entryCount - 1 - i))) : [...Array(entryCount)].map((_, i) => entryLow + (entryStep * i));
 
     // Forward each entry as a separate message to the channel
     for (let i = 0; i < entryCount; i++) {
-        const entryPrice = (entryLow + i * entryStep).toFixed(2);
-        const entryTP = i <= 3 ? tp1 : tp2;
+        const entryPrice = entries[i].toFixed(2);
+        const entryTP = (i < 5) ? tp1 : tp2;
         
         const message = `${action} ${symbol}\n`
             + `ENTRY: ${entryPrice}\n`
             + `Lot Size: ${entryLotSize.toFixed(2)}\n`
-            + `TP: ${entryTP}\n`
+            + `TP: ${entryTP.toFixed(2)}\n`
             + `SL: ${sl}`;
 
         console.log('======');
         console.log(message);
 
         // Forward each entry as a separate message to the channel
-        bot.telegram.sendMessage(channelUsername, message);
+        // bot.telegram.sendMessage(channelUsername, message);
     }
 });
-
-
 
 bot.launch();
