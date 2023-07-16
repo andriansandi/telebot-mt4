@@ -70,10 +70,10 @@ bot.on('text', async (ctx) => {
 
     // Set default values for TP1 and TP2 if they are undefined
     if (typeof tp1 === 'undefined') {
-        tp1 = entryLow + 20; // Set default TP1 as 20 pips above entryLow
+        tp1 = entryLow + (20 * 0.01); // Set default TP1 as 20 pips above entryLow
     }
     if (typeof tp2 === 'undefined') {
-        tp2 = entryLow + 40; // Set default TP2 as 40 pips above entryLow
+        tp2 = entryLow + (40 * 0.01); // Set default TP2 as 40 pips above entryLow
     }
 
     // Reverse the entry array when the action is "SELL"
@@ -82,7 +82,15 @@ bot.on('text', async (ctx) => {
     // Forward each entry as a separate message to the channel
     for (let i = 0; i < entryCount; i++) {
         const entryPrice = entries[i].toFixed(2);
-        const entryTP = (i < 5) ? tp1 : tp2;
+
+        // Calculate entryTP
+        let entryTP;
+        if (parseFloat(process.env.PROFIT_PIPS) === 0) {
+            entryTP = (i < 5) ? tp1 : tp2;
+        } else {
+            const pips = parseFloat(process.env.PROFIT_PIPS);
+            entryTP = parseFloat(entryPrice) + (pips * 0.01);
+        }
         
         const message = `${action} ${symbol}\n`
             + `ENTRY: ${entryPrice}\n`
@@ -94,7 +102,7 @@ bot.on('text', async (ctx) => {
         console.log(message);
 
         // Forward each entry as a separate message to the channel
-        // bot.telegram.sendMessage(channelUsername, message);
+        if(process.env.BROADCAST) bot.telegram.sendMessage(channelUsername, message);
     }
 });
 
