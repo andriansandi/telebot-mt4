@@ -49,8 +49,8 @@ bot.on('text', async (ctx) => {
   const messages = generateMessages(action, symbol, entries, entryTPs, sl, entryLotSize);
   sendMessages(messages, config.channelUsername, config.broadcast);
 
-  console.log('======');
-  console.log(messages);
+  console.log('=> TBXMINER SIGNAL FORWARDER RADY <==');
+  // console.log(messages);
 });
 
 // Extracts symbol, action, entryLow, entryHigh, and entryPrice from the chat text
@@ -159,7 +159,7 @@ function generateMessages(action, symbol, entries, entryTPs, sl, entryLotSize) {
 function sendMessages(messages, channelUsername, broadcast) {
   for (const message of messages) {
     console.log('======');
-    console.log(message);
+    console.log(message.replace("\n", " "));
 
     if (broadcast) {
       bot.telegram.sendMessage(channelUsername, message);
