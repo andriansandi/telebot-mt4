@@ -26,7 +26,8 @@ bot.command('start', ctx => {
 bot.on('text', async (ctx) => {
   const chatText = ctx.message.text;
 
-  console.log("==============");
+  // console.log("==============");
+  console.log('=> TBXMINER SIGNAL FORWARDER RADY <==');
   // Extract symbol, action, entryLow, and entryHigh
   const { symbol, action, entryLow, entryHigh, entryPrice } = extractSymbolActionEntry(chatText);
 
@@ -49,7 +50,7 @@ bot.on('text', async (ctx) => {
   const messages = generateMessages(action, symbol, entries, entryTPs, sl, entryLotSize);
   sendMessages(messages, config.channelUsername, config.broadcast);
 
-  console.log('=> TBXMINER SIGNAL FORWARDER RADY <==');
+  
   // console.log(messages);
 });
 
@@ -141,12 +142,21 @@ function generateMessages(action, symbol, entries, entryTPs, sl, entryLotSize) {
 
   for (let i = 0; i < entries.length; i++) {
     const entryPrice = entries[i];
-    const entryTP = entryTPs[i];
+    let entryTP;
+    if(action == 'BUY') {
+      entryTP = parseFloat(entryPrice) + (parseFloat(process.env.PROFIT_PIPS) * 0.01);
+    } else {
+      entryTP = parseFloat(entryPrice) - (parseFloat(process.env.PROFIT_PIPS) * 0.01);
+    }
 
-    const message = `${symbol} ${action} LIMIT @${entryPrice} \n`
+    const message = `${symbol} ${action} STOP @${entryPrice}\n`
       + `LOT: ${entryLotSize.toFixed(2)}\n`
       + `TP: ${entryTP.toFixed(2)}\n`
       + `SL: ${sl}`;
+
+    // Generate console.log  
+    // console.log(`${symbol} ${action} LIMIT @${entryPrice} LOT: ${entryLotSize.toFixed(2)} TP: ${entryTP.toFixed(2)} SL: ${sl}`);
+    // console.log(message);
 
     messages.push(message);
   }
@@ -158,10 +168,11 @@ function generateMessages(action, symbol, entries, entryTPs, sl, entryLotSize) {
 function sendMessages(messages, channelUsername, broadcast) {
   for (const message of messages) {
     console.log('======');
-    console.log(message.replace("\n", " "));
+    console.log(message);
+    // console.log(message.replace("\n", " "));
 
     if (broadcast) {
-      bot.telegram.sendMessage(channelUsername, message);
+      // bot.telegram.sendMessage(channelUsername, message);
     }
   }
 }
