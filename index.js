@@ -143,9 +143,8 @@ function generateMessages(action, symbol, entries, entryTPs, sl, entryLotSize) {
     const entryPrice = entries[i];
     const entryTP = entryTPs[i];
 
-    const message = `${action} ${symbol}\n`
-      + `ENTRY: ${entryPrice}\n`
-      + `Lot Size: ${entryLotSize.toFixed(2)}\n`
+    const message = `${symbol} ${action} LIMIT @${entryPrice} \n`
+      + `LOT: ${entryLotSize.toFixed(2)}\n`
       + `TP: ${entryTP.toFixed(2)}\n`
       + `SL: ${sl}`;
 
