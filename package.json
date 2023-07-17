@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "dotenv": "^16.3.1",
+    "metaapi.cloud-sdk": "^23.3.3",
     "nodemon": "^3.0.1",
     "telegraf": "^4.12.2"
   }
