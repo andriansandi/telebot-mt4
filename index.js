@@ -91,11 +91,36 @@ function extractSymbolActionEntry(chatText) {
   
     const actionMatches = chatText.match(/(BUY|SELL)/i);
     const action = actionMatches ? actionMatches[0] : null;
-  
-    const entryPriceMatches = chatText.match(/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)/);
-    const entryLow = entryPriceMatches ? parseFloat(action === 'BUY' ? entryPriceMatches[1] : entryPriceMatches[2]) : null;
-    const entryHigh = entryPriceMatches ? parseFloat(action === 'BUY' ? entryPriceMatches[2] : entryPriceMatches[1]) : null;
-    const entryPrice = entryPriceMatches ? entryPriceMatches[1] : null;
+
+    // Extract entryPrice
+    let entryPriceMatches;
+    let entryLow = 0;
+    let entryHigh = 0;
+    let entryPrice = 0;
+    entryPriceMatches = chatText.match(/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)/);
+    if(entryPriceMatches) {
+      entryLow = entryPriceMatches ? parseFloat(action === 'BUY' ? entryPriceMatches[1] : entryPriceMatches[2]) : null;
+      entryHigh = entryPriceMatches ? parseFloat(action === 'BUY' ? entryPriceMatches[2] : entryPriceMatches[1]) : null;
+      entryPrice = entryPriceMatches ? entryPriceMatches[1] : null;
+    } else {
+      entryPriceMatches = chatText.match(/@(?:\s*)(\d+(?:\.\d+)?)/);
+      entryPrice = entryPriceMatches[1];
+      if(action == 'BUY') {
+        entryHigh = parseFloat(entryPriceMatches[1]);
+        entryLow = entryHigh - (200 * 0.01);
+      } else {
+        // SELL
+        entryLow = parseFloat(entryPriceMatches[1]);
+        entryHigh = entryLow + (200 * 0.01);
+      }
+      console.log('Single entry');
+    }
+
+    // console.log('entryPriceMatches: ', entryPriceMatches);
+    console.log(`Symbol: ${symbol}`);
+    console.log(`Action: ${action}`);
+    console.log(`Entry High: ${entryHigh}`);
+    console.log(`Entry Low: ${entryLow}`);
   
     return { symbol, action, entryLow, entryHigh, entryPrice };
 }
@@ -103,8 +128,12 @@ function extractSymbolActionEntry(chatText) {
 
 // Extracts TP1, TP2, and SL from the chat text
 function extractTPLevels(chatText) {
-  const tpSlMatches = chatText.match(/TP (\d+(?:\.\d+)?)|SL (\d+(?:\.\d+)?)/g);
+  let tpSlMatches;
   let tp1, tp2, sl;
+
+  tpSlMatches = chatText.match(/TP (\d+(?:\.\d+)?)|SL (\d+(?:\.\d+)?)/g);
+
+  
 
   if (tpSlMatches) {
     for (const match of tpSlMatches) {
@@ -115,11 +144,24 @@ function extractTPLevels(chatText) {
         } else {
           tp2 = parseFloat(parts[1]);
         }
-      } else if (parts[0] === 'SL') {
+      } else if (parts[0] === 'SL' || parts[0] == 'Sl') {
         sl = parseFloat(parts[1]);
       }
     }
+  } else {
+    const slMatches = chatText.match(/Sl\s*:\s*(\d+(?:\.\d+)?)/i);
+    sl = slMatches ? parseFloat(slMatches[1]) : null;
+
+    const tp1Matches = chatText.match(/Tp1\s*:\s*(\d+(?:\.\d+)?)/i);
+    tp1 = tp1Matches ? parseFloat(tp1Matches[1]) : null;
+
+    const tp2Matches = chatText.match(/Tp2\s*:\s*(\d+(?:\.\d+)?)/i);
+    tp2 = tp2Matches ? parseFloat(tp2Matches[1]) : null;
   }
+
+  console.log(`TP1: ${tp1}`);
+  console.log(`TP2: ${tp2}`);
+  console.log(`SL: ${sl}`);
 
   return { tp1, tp2, sl };
 }
@@ -202,7 +244,7 @@ function sendMessages(messages, channelUsername, broadcast) {
     // console.log(message.replace("\n", " "));
 
     if (broadcast) {
-      bot.telegram.sendMessage(channelUsername, message);
+      // bot.telegram.sendMessage(channelUsername, message);
     }
   }
 }
