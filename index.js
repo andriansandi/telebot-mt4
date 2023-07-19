@@ -1,5 +1,9 @@
+const tls = require('tls');
 const { Telegraf } = require('telegraf');
 require('dotenv').config();
+
+// Increase the maximum number of listeners for TLSSocket
+tls.DEFAULT_MAX_LISTENERS = 20;
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
@@ -9,7 +13,7 @@ const config = {
   lotSize: parseFloat(process.env.LOT_SIZE),
   entryCount: parseInt(process.env.ENTRY_COUNT),
   profitPips: parseFloat(process.env.PROFIT_PIPS),
-  broadcast: process.env.BROADCAST,
+  broadcast: process.env.BROADCAST === 'TRUE',
 };
 
 // Set default TP values
@@ -17,7 +21,7 @@ const defaultTP1Pips = 20;
 const defaultTP2Pips = 40;
 
 // Set MaxListener 
-process.setMaxListeners(20);
+// process.setMaxListeners(20);
 
 // Start command handler
 bot.command('start', ctx => {
@@ -247,7 +251,10 @@ function sendMessages(messages, channelUsername, broadcast) {
     // console.log(message.replace("\n", " "));
 
     if (broadcast) {
+      console.log('BROADCAST ENABLED');
       bot.telegram.sendMessage(channelUsername, message);
+    } else {
+      console.log('BROADCAST DISABLED');
     }
   }
 }

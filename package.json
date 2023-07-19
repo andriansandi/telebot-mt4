@@ -6,7 +6,7 @@
   "author": "Sandi Andrian <andrian.sandi@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon index.js",
+    "dev": "dotenv -e .env nodemon index.js",
     "start": "node index.js"
   },
   "dependencies": {
@@ -14,5 +14,8 @@
     "metaapi.cloud-sdk": "^23.3.3",
     "nodemon": "^3.0.1",
     "telegraf": "^4.12.2"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^7.2.1"
   }
 }
