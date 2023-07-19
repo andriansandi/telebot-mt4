@@ -244,7 +244,7 @@ function sendMessages(messages, channelUsername, broadcast) {
     // console.log(message.replace("\n", " "));
 
     if (broadcast) {
-      // bot.telegram.sendMessage(channelUsername, message);
+      bot.telegram.sendMessage(channelUsername, message);
     }
   }
 }
