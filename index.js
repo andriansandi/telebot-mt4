@@ -16,6 +16,9 @@ const config = {
 const defaultTP1Pips = 20;
 const defaultTP2Pips = 40;
 
+// Set MaxListener 
+bot.telegram.setMaxListeners(20);
+
 // Start command handler
 bot.command('start', ctx => {
   console.log(ctx.from);
