@@ -17,7 +17,7 @@ const defaultTP1Pips = 20;
 const defaultTP2Pips = 40;
 
 // Set MaxListener 
-bot.setMaxListeners(20);
+process.setMaxListeners(20);
 
 // Start command handler
 bot.command('start', ctx => {
