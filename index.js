@@ -8,7 +8,10 @@ require('tls').DEFAULT_MAX_LISTENERS = 20;
 
 
 // Register the handlers
-bot.command('start', signalController.handleSignal);
+bot.command('start', signalController.handleStart);
+bot.command('sl', signalController.handleUpdateSL);
+bot.command('bin', signalController.handleBuyMarket);
+bot.command('be', signalController.handleSetBreakeven);
 bot.on('text', signalController.handleSignal);
 
 // Start the bot

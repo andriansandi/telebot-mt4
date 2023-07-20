@@ -13,6 +13,26 @@ const {
 
 const config = require('../config');
 
+function handleStart(ctx) {
+  // Get the user's information
+  const user = ctx.from;
+
+  // Send a welcome message to the user
+  ctx.reply(`Hello, ${user.first_name}! I am TBXALGO BOT. How can I assist you?`);
+}
+
+function handleUpdateSL(ctx) {
+  ctx.reply(`SL Updated to XXXXX`);
+}
+
+function handleBuyMarket(ctx) {
+  ctx.reply(`I'm going to buy in market price now`);
+}
+
+function handleSetBreakeven(ctx) {
+  ctx.reply(`I'm goring to set breakeven for orders were in profits`);
+}
+
 function handleSignal(ctx) {
   const chatText = ctx.message.text;
   console.log('CHAT TEXT: ' + chatText);
@@ -74,5 +94,9 @@ function handleSignal(ctx) {
 }
 
 module.exports = {
+  handleStart,
   handleSignal,
+  handleUpdateSL,
+  handleBuyMarket,
+  handleSetBreakeven
 };
