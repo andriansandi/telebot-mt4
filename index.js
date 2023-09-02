@@ -13,6 +13,7 @@ const config = {
   lotSize: parseFloat(process.env.LOT_SIZE),
   entryCount: parseInt(process.env.ENTRY_COUNT),
   profitPips: parseFloat(process.env.PROFIT_PIPS),
+  spreadPips: parseFloat(process.env.SPREAD_PIPS), // Add the spread configuration
   broadcast: process.env.BROADCAST === 'TRUE',
 };
 
@@ -32,6 +33,7 @@ bot.command('start', ctx => {
 // Text message handler
 bot.on('text', async (ctx) => {
   const chatText = ctx.message.text;
+  console.log(chatText);
 
   // console.log("==============");
   console.log('=> TBXMINER SIGNAL FORWARDER RADY <==');
@@ -84,7 +86,7 @@ bot.on('text', async (ctx) => {
   const entries = (action === 'SELL') ? generateReverseEntries(entryLow, entryStep, config.entryCount) : generateEntries(entryLow, entryStep, config.entryCount);
 
   // Generate and send messages
-  const messages = generateMessages(action, symbol, entries, entryTPs, sl, entryLotSize);
+  const messages = generateMessages(action, symbol, entries, tp1, sl, entryLotSize);
   sendMessages(messages, config.channelUsername, config.broadcast);
 
   
@@ -140,8 +142,6 @@ function extractTPLevels(chatText) {
 
   tpSlMatches = chatText.match(/TP (\d+(?:\.\d+)?)|SL (\d+(?:\.\d+)?)/g);
 
-  
-
   if (tpSlMatches) {
     for (const match of tpSlMatches) {
       const parts = match.split(' ');
@@ -183,20 +183,20 @@ function calculateEntryStep(entryLow, entryHigh, entryCount) {
   return (entryHigh - entryLow) / (entryCount - 1);
 }
 
-// Calculates the entry TP values
-function calculateEntryTPs(action, entryLow, entryPrice, tp1, tp2, profitPips) {
+// Calculates the entry TP values with spread
+function calculateEntryTPs(action, entryLow, entryPrice, tp1, tp2, profitPips, spreadPips) {
   const entryTPs = [];
 
   if (profitPips === 0) {
     for (let i = 0; i < 7; i++) {
       if ((action === 'BUY' && i < 5) || (action === 'SELL' && i > 1)) {
-        entryTPs.push(entryLow + (defaultTP1Pips * 0.01));
+        entryTPs.push(entryLow + (defaultTP1Pips * 0.01) - (spreadPips * 0.01));
       } else {
-        entryTPs.push(entryLow + (defaultTP2Pips * 0.01));
+        entryTPs.push(entryLow + (defaultTP2Pips * 0.01) - (spreadPips * 0.01));
       }
     }
   } else {
-    const pips = profitPips * 0.01;
+    const pips = (profitPips - spreadPips) * 0.01;
     for (let i = 0; i < 7; i++) {
       entryTPs.push(parseFloat(entryPrice) + pips);
     }
@@ -204,6 +204,7 @@ function calculateEntryTPs(action, entryLow, entryPrice, tp1, tp2, profitPips) {
 
   return entryTPs;
 }
+
 
 // Generates entries array
 function generateEntries(entryLow, entryStep, entryCount) {
@@ -216,26 +217,44 @@ function generateReverseEntries(entryLow, entryStep, entryCount) {
 }
 
 // Generates the messages
-function generateMessages(action, symbol, entries, entryTPs, sl, entryLotSize) {
+function generateMessages(action, symbol, entries, tp1, sl, entryLotSize) {
   const messages = [];
+
+  console.log('TP 1: ' + tp1);
 
   for (let i = 0; i < entries.length; i++) {
     const entryPrice = entries[i];
+
+    let message;
     let entryTP;
     if(action == 'BUY') {
-      entryTP = parseFloat(entryPrice) + (parseFloat(process.env.PROFIT_PIPS) * 0.01);
+      if(process.env.PROFIT_PIPS > 0) {
+        entryTP = parseFloat(entryPrice) + (parseFloat(process.env.PROFIT_PIPS) * 0.01);
+      } else {
+        entryTP = tp1;
+      }
     } else {
       entryTP = parseFloat(entryPrice) - (parseFloat(process.env.PROFIT_PIPS) * 0.01);
     }
 
-    const message = `${symbol} ${action} LIMIT @${entryPrice}\n`
-      + `LOT: ${entryLotSize.toFixed(2)}\n`
-      + `TP: ${entryTP.toFixed(2)}\n`
-      + `SL: ${sl}`;
+    // Calculate with Spreads
+    if(process.env.SPREAD_PIPS > 0) {
+      entryWithSpreads = parseFloat(entryPrice) - (parseFloat(process.env.SPREAD_PIPS) * 0.01);
+      slWithSpreads = parseFloat(sl) - (parseFloat(process.env.SPREAD_PIPS) * 0.01);
+      tpWithSpreads = parseFloat(entryTP) - (parseFloat(process.env.SPREAD_PIPS) * 0.01);
 
-    // Generate console.log  
-    // console.log(`${symbol} ${action} LIMIT @${entryPrice} LOT: ${entryLotSize.toFixed(2)} TP: ${entryTP.toFixed(2)} SL: ${sl}`);
-    // console.log(message);
+      // generate message
+      message = `${symbol} ${action} LIMIT @${entryWithSpreads}\n`
+                + `LOT: ${entryLotSize.toFixed(2)}\n`
+                + `TP: ${tpWithSpreads.toFixed(2)}\n`
+                + `SL: ${slWithSpreads}`;
+    } else {
+      message = `${symbol} ${action} LIMIT @${entryPrice}\n`
+                + `LOT: ${entryLotSize.toFixed(2)}\n`
+                + `TP: ${entryTP.toFixed(2)}\n`
+                + `SL: ${sl}`;
+    }
+
 
     messages.push(message);
   }
@@ -251,10 +270,10 @@ function sendMessages(messages, channelUsername, broadcast) {
     // console.log(message.replace("\n", " "));
 
     if (broadcast) {
-      console.log('BROADCAST ENABLED');
+      // console.log('BROADCAST ENABLED');
       bot.telegram.sendMessage(channelUsername, message);
     } else {
-      console.log('BROADCAST DISABLED');
+      // console.log('BROADCAST DISABLED');
     }
   }
 }
