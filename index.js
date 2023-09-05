@@ -234,7 +234,11 @@ function generateMessages(action, symbol, entries, tp1, sl, entryLotSize) {
         entryTP = tp1;
       }
     } else {
-      entryTP = parseFloat(entryPrice) - (parseFloat(process.env.PROFIT_PIPS) * 0.01);
+      if(process.env.PROFIT_PIPS > 0) {
+        entryTP = parseFloat(entryPrice) - (parseFloat(process.env.PROFIT_PIPS) * 0.01);
+      } else {
+        entryTP = tp1;
+      }
     }
 
     // Calculate with Spreads
