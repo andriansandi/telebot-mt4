@@ -20,6 +20,7 @@ const config = {
 // Set default TP values
 const defaultTP1Pips = 20;
 const defaultTP2Pips = 40;
+entryLotSize = 0.01;
 
 // Set MaxListener 
 // process.setMaxListeners(20);
@@ -30,51 +31,27 @@ bot.command('start', ctx => {
   bot.telegram.sendMessage(ctx.chat.id, 'Hello!, I am TBXMINER BOT that will forwarded your signal', {});
 });
 
-// Text message handler
+// Handling bot
 bot.on('text', async (ctx) => {
   const chatText = ctx.message.text;
-  console.log(chatText);
+  console.log('=> TBXMINER SIGNAL FORWARDER READY <==');
 
-  // console.log("==============");
-  console.log('=> TBXMINER SIGNAL FORWARDER RADY <==');
-  // const MetaApi = require('metaapi.cloud-sdk').default;
-  // const token = 'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiIxZmNmNGZkNjQ1MjAwNTI5NTlhMGNmOGQ2MWNhN2FlMSIsInBlcm1pc3Npb25zIjpbXSwiYWNjZXNzUnVsZXMiOlt7ImlkIjoidHJhZGluZy1hY2NvdW50LW1hbmFnZW1lbnQtYXBpIiwibWV0aG9kcyI6WyJ0cmFkaW5nLWFjY291bnQtbWFuYWdlbWVudC1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciIsIndyaXRlciJdLCJyZXNvdXJjZXMiOlsiKjokVVNFUl9JRCQ6KiJdfSx7ImlkIjoibWV0YWFwaS1yZXN0LWFwaSIsIm1ldGhvZHMiOlsibWV0YWFwaS1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciIsIndyaXRlciJdLCJyZXNvdXJjZXMiOlsiKjokVVNFUl9JRCQ6KiJdfSx7ImlkIjoibWV0YWFwaS1ycGMtYXBpIiwibWV0aG9kcyI6WyJtZXRhYXBpLWFwaTp3czpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciIsIndyaXRlciJdLCJyZXNvdXJjZXMiOlsiKjokVVNFUl9JRCQ6KiJdfSx7ImlkIjoibWV0YWFwaS1yZWFsLXRpbWUtc3RyZWFtaW5nLWFwaSIsIm1ldGhvZHMiOlsibWV0YWFwaS1hcGk6d3M6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX0seyJpZCI6Im1ldGFzdGF0cy1hcGkiLCJtZXRob2RzIjpbIm1ldGFzdGF0cy1hcGk6cmVzdDpwdWJsaWM6KjoqIl0sInJvbGVzIjpbInJlYWRlciJdLCJyZXNvdXJjZXMiOlsiKjokVVNFUl9JRCQ6KiJdfSx7ImlkIjoicmlzay1tYW5hZ2VtZW50LWFwaSIsIm1ldGhvZHMiOlsicmlzay1tYW5hZ2VtZW50LWFwaTpyZXN0OnB1YmxpYzoqOioiXSwicm9sZXMiOlsicmVhZGVyIiwid3JpdGVyIl0sInJlc291cmNlcyI6WyIqOiRVU0VSX0lEJDoqIl19LHsiaWQiOiJjb3B5ZmFjdG9yeS1hcGkiLCJtZXRob2RzIjpbImNvcHlmYWN0b3J5LWFwaTpyZXN0OnB1YmxpYzoqOioiXSwicm9sZXMiOlsicmVhZGVyIiwid3JpdGVyIl0sInJlc291cmNlcyI6WyIqOiRVU0VSX0lEJDoqIl19LHsiaWQiOiJtdC1tYW5hZ2VyLWFwaSIsIm1ldGhvZHMiOlsibXQtbWFuYWdlci1hcGk6cmVzdDpkZWFsaW5nOio6KiIsIm10LW1hbmFnZXItYXBpOnJlc3Q6cHVibGljOio6KiJdLCJyb2xlcyI6WyJyZWFkZXIiLCJ3cml0ZXIiXSwicmVzb3VyY2VzIjpbIio6JFVTRVJfSUQkOioiXX1dLCJ0b2tlbklkIjoiMjAyMTAyMTMiLCJpbXBlcnNvbmF0ZWQiOmZhbHNlLCJyZWFsVXNlcklkIjoiMWZjZjRmZDY0NTIwMDUyOTU5YTBjZjhkNjFjYTdhZTEiLCJpYXQiOjE2ODk0MDI3NDl9.YOY7qnGk0avobriyhA-NPCbAT-nunjwtsU7XNitaztzX87EhLvQAhtWsWNWMGqA1-Qy1OtT40LmMIKkf4rAvixwzhslqGEfdYKLw6n3zx0Q3ec7YTJy3cNN_IPaZMokjlNZSKAMjNHJB8gQ-zpGpcJlxQuz26HShG8DDUSHk322FynmmMq9rxjNwe5rrRRv3EpU8YN8cm1PUzwhdXCyDm-uAYzUQOxaEutUCFwHcY10HTDSQNpjmO8dLO1buQC5GRs2kbDrLxzSSB2letrrLPdU-b0jDCbIysvTcIJGLpqArdh3-_mNcGikgLMpepvHQZcdkdkN6-CEc24UuqYazsjwMY4XrrpRc5se8eJFnH2tDsnQB5OJk9PwKj6_xkOcw2AbOAQGYDtPkpqRNjACvUdqY1xlw9hp1xXqQXxwwX1YuxXEMEKDee1uHmgjPwoQeDEim-8FD4lHNCHp8vWcg4B_8r0BA2I7zDtg7DBAkUD_Nf6r2FnKaCBnZrLFHEiFeDgRVQAym3hiwk0-rNmJe1cXOc6oNt1KQj_hNmmNBVbPlS-fe_g2Svwawvlrs6NAibF8OeFzGtTs1XAPbqN0D_qoArWoseHJXHOr-eLxJ7UJXu--I3jtZ4iJE_i3HlIeJCSSGJ8hPg8p_XNkiqbYcQHcX4sD-0036-qNY816Ny3o';
-  // const accountId = '0dcc7a20-6163-48e2-a5cf-ab2f5bf69afd';
+  // Extract symbol and action
+  const symbol = extractSymbol(chatText);
+  const action = extractAction(chatText);
 
-  // const metaApi = new MetaApi(token);
+  if (!symbol || !action) {
+    return; // If either symbol or action is not found, stop processing
+  }
 
-  // const account = await metaApi.metatraderAccountApi.getAccount(accountId);
-
-  // account.on('trade', (trade) => {
-  //   // Handle trade update
-  // });
-  
-  // account.on('order', (order) => {
-  //   // Handle order update
-  // });
-  
-  // account.on('state', (state) => {
-  //   // Handle terminal state update
-  // });
-  
-  // const orderId = await account.createOrder({
-  //   symbol: 'EURUSD',
-  //   type: 'MARKET',
-  //   volume: 0.01,
-  //   stopLoss: 1.2,
-  //   takeProfit: 1.4
-  // });
-  
-
-
-  // Extract symbol, action, entryLow, and entryHigh
-  const { symbol, action, entryLow, entryHigh, entryPrice } = extractSymbolActionEntry(chatText);
+  // Extract entry details based on action (BUY/SELL)
+  const { entryLow, entryHigh, entryPrice } = extractEntryDetails(chatText, action);
 
   // Extract TP levels
   const { tp1, tp2, sl } = extractTPLevels(chatText);
 
   // Calculate lot size per entry
-  const entryLotSize = calculateEntryLotSize(config.lotSize, config.entryCount);
+  let entryLotSize = config.lotSize <= 0 ? calculateEntryLotSize(config.lotSize, config.entryCount) : config.lotSize;
 
   // Calculate individual entry step
   const entryStep = calculateEntryStep(entryLow, entryHigh, config.entryCount);
@@ -88,83 +65,90 @@ bot.on('text', async (ctx) => {
   // Generate and send messages
   const messages = generateMessages(action, symbol, entries, tp1, sl, entryLotSize);
   sendMessages(messages, config.channelUsername, config.broadcast);
-
-  
-  // console.log(messages);
 });
 
-// Extracts symbol, action, entryLow, entryHigh, and entryPrice from the chat text
-function extractSymbolActionEntry(chatText) {
-    const symbolMatches = chatText.match(/(XAUUSD|XAU\/USD)/i);
-    const symbol = symbolMatches ? symbolMatches[0].replace("/", "") : null;
-  
-    const actionMatches = chatText.match(/(BUY|SELL)/i);
-    const action = actionMatches ? actionMatches[0] : null;
+// Extract symbol from chat text
+function extractSymbol(chatText) {
+  const symbolMatches = chatText.match(/\b([A-Z]{3}\/?[A-Z]{3}|GOLD|Gold|XAUUSD|XAU\/USD)\b/i);
+  let symbol = symbolMatches ? symbolMatches[0].replace("/", "") : null; // Remove '/' for uniformity
 
-    // Extract entryPrice
-    let entryPriceMatches;
-    let entryLow = 0;
-    let entryHigh = 0;
-    let entryPrice = 0;
-    entryPriceMatches = chatText.match(/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)/);
-    if(entryPriceMatches) {
-      entryLow = entryPriceMatches ? parseFloat(action === 'BUY' ? entryPriceMatches[1] : entryPriceMatches[2]) : null;
-      entryHigh = entryPriceMatches ? parseFloat(action === 'BUY' ? entryPriceMatches[2] : entryPriceMatches[1]) : null;
-      entryPrice = entryPriceMatches ? entryPriceMatches[1] : null;
-    } else {
-      entryPriceMatches = chatText.match(/@(?:\s*)(\d+(?:\.\d+)?)/);
-      entryPrice = entryPriceMatches[1];
-      if(action == 'BUY') {
-        entryHigh = parseFloat(entryPriceMatches[1]);
-        entryLow = entryHigh - (200 * 0.01);
-      } else {
-        // SELL
-        entryLow = parseFloat(entryPriceMatches[1]);
-        entryHigh = entryLow + (200 * 0.01);
-      }
-      console.log('Single entry');
-    }
+  // Convert any "Gold" or "GOLD" instances to "XAUUSD"
+  if (symbol && /Gold|GOLD/i.test(symbol)) {
+    symbol = 'XAUUSD';
+  }
 
-    // console.log('entryPriceMatches: ', entryPriceMatches);
-    console.log(`Symbol: ${symbol}`);
-    console.log(`Action: ${action}`);
-    console.log(`Entry High: ${entryHigh}`);
-    console.log(`Entry Low: ${entryLow}`);
-  
-    return { symbol, action, entryLow, entryHigh, entryPrice };
+  if (!symbol) {
+    console.error("Error: Symbol not detected. Please check the input format.");
+    return null;  // Return null if no symbol is detected
+  }
+
+  console.log(`Detected symbol: ${symbol}`);
+  return symbol;
 }
-  
+
+// Extract action (BUY/SELL) from chat text
+function extractAction(chatText) {
+  const actionMatches = chatText.match(/(BUY|SELL)/i);
+  const action = actionMatches ? actionMatches[0].toUpperCase() : null;
+
+  if (!action) {
+    console.error("Error: Action (BUY/SELL) not detected.");
+    return null;  // Return null if no action is detected
+  }
+
+  console.log(`Detected action: ${action}`);
+  return action;
+}
+
+// Extract entry details (entryLow, entryHigh, entryPrice) from chat text
+function extractEntryDetails(chatText, action) {
+  let entryLow = 0;
+  let entryHigh = 0;
+  let entryPrice = 0;
+
+  // Match entry ranges like '2685.20 - 2689.20'
+  let entryPriceMatches = chatText.match(/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)/);
+  if (entryPriceMatches) {
+    entryLow = parseFloat(action === 'BUY' ? entryPriceMatches[1] : entryPriceMatches[2]);
+    entryHigh = parseFloat(action === 'BUY' ? entryPriceMatches[2] : entryPriceMatches[1]);
+    entryPrice = entryLow; // Use entryLow as the initial price for further processing
+  } else {
+    // Match single '@' entry values like '@ 2685.20'
+    entryPriceMatches = chatText.match(/@(?:\s*)(\d+(?:\.\d+)?)/);
+    if (entryPriceMatches) {
+      entryPrice = parseFloat(entryPriceMatches[1]);
+      if (action === 'BUY') {
+        entryHigh = entryPrice;
+        entryLow = entryHigh - (200 * 0.01); // Example adjustment for entry range
+      } else {
+        entryLow = entryPrice;
+        entryHigh = entryLow + (200 * 0.01); // Example adjustment for entry range
+      }
+      console.log('Single entry detected');
+    }
+  }
+
+  console.log(`Entry Low: ${entryLow}`);
+  console.log(`Entry High: ${entryHigh}`);
+  console.log(`Entry Price: ${entryPrice}`);
+
+  return { entryLow, entryHigh, entryPrice };
+}
 
 // Extracts TP1, TP2, and SL from the chat text
 function extractTPLevels(chatText) {
-  let tpSlMatches;
   let tp1, tp2, sl;
 
-  tpSlMatches = chatText.match(/TP (\d+(?:\.\d+)?)|SL (\d+(?:\.\d+)?)/g);
+  // Match SL with optional special characters, followed by a number
+  const slMatches = chatText.match(/SL\s*[^0-9]*\s*(\d+(?:\.\d+)?)/i);
+  sl = slMatches ? parseFloat(slMatches[1]) : null;
 
-  if (tpSlMatches) {
-    for (const match of tpSlMatches) {
-      const parts = match.split(' ');
-      if (parts[0] === 'TP') {
-        if (!tp1) {
-          tp1 = parseFloat(parts[1]);
-        } else {
-          tp2 = parseFloat(parts[1]);
-        }
-      } else if (parts[0] === 'SL' || parts[0] == 'Sl') {
-        sl = parseFloat(parts[1]);
-      }
-    }
-  } else {
-    const slMatches = chatText.match(/Sl\s*:\s*(\d+(?:\.\d+)?)/i);
-    sl = slMatches ? parseFloat(slMatches[1]) : null;
+  // Match TP1 and TP2, allowing for variations in formatting (e.g., "TP 1", "Tp1", etc.)
+  const tpMatches = chatText.match(/TP\s*1\s*[:\-]?\s*(\d+(?:\.\d+)?)/i);
+  tp1 = tpMatches ? parseFloat(tpMatches[1]) : null;
 
-    const tp1Matches = chatText.match(/Tp1\s*:\s*(\d+(?:\.\d+)?)/i);
-    tp1 = tp1Matches ? parseFloat(tp1Matches[1]) : null;
-
-    const tp2Matches = chatText.match(/Tp2\s*:\s*(\d+(?:\.\d+)?)/i);
-    tp2 = tp2Matches ? parseFloat(tp2Matches[1]) : null;
-  }
+  const tp2Matches = chatText.match(/TP\s*2\s*[:\-]?\s*(\d+(?:\.\d+)?)/i);
+  tp2 = tp2Matches ? parseFloat(tp2Matches[1]) : null;
 
   console.log(`TP1: ${tp1}`);
   console.log(`TP2: ${tp2}`);
@@ -172,6 +156,7 @@ function extractTPLevels(chatText) {
 
   return { tp1, tp2, sl };
 }
+
 
 // Calculates the lot size per entry
 function calculateEntryLotSize(lotSize, entryCount) {
@@ -220,8 +205,6 @@ function generateReverseEntries(entryLow, entryStep, entryCount) {
 function generateMessages(action, symbol, entries, tp1, sl, entryLotSize) {
   const messages = [];
 
-  console.log('TP 1: ' + tp1);
-
   for (let i = 0; i < entries.length; i++) {
     const entryPrice = entries[i];
 
@@ -248,12 +231,12 @@ function generateMessages(action, symbol, entries, tp1, sl, entryLotSize) {
       tpWithSpreads = parseFloat(entryTP) - (parseFloat(process.env.SPREAD_PIPS) * 0.01);
 
       // generate message
-      message = `${symbol} ${action} LIMIT @${entryWithSpreads}\n`
+      message = `${symbol} ${action} LIMIT @${entryWithSpreads.toFixed(2)}\n`
                 + `LOT: ${entryLotSize.toFixed(2)}\n`
                 + `TP: ${tpWithSpreads.toFixed(2)}\n`
                 + `SL: ${slWithSpreads}`;
     } else {
-      message = `${symbol} ${action} LIMIT @${entryPrice}\n`
+      message = `${symbol} ${action} LIMIT @${parseFloat(entryPrice).toFixed(2)}\n`
                 + `LOT: ${entryLotSize.toFixed(2)}\n`
                 + `TP: ${entryTP.toFixed(2)}\n`
                 + `SL: ${sl}`;
