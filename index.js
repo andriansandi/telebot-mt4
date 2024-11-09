@@ -1,6 +1,9 @@
 const tls = require('tls');
 const { Telegraf } = require('telegraf');
+const chalk = require('chalk');
 require('dotenv').config();
+
+const log = console.log;
 
 // Increase the maximum number of listeners for TLSSocket
 tls.DEFAULT_MAX_LISTENERS = 20;
@@ -21,20 +24,25 @@ const config = {
 const defaultTP1Pips = 20;
 const defaultTP2Pips = 40;
 entryLotSize = 0.01;
+let entrys = [];
 
 // Set MaxListener 
 // process.setMaxListeners(20);
 
 // Start command handler
 bot.command('start', ctx => {
-  console.log(ctx.from);
+  log(chalk.green.bold('Bot Started!'));
+  log(chalk.blue('User: ', ctx.from));
   bot.telegram.sendMessage(ctx.chat.id, 'Hello!, I am TBXMINER BOT that will forwarded your signal', {});
 });
 
 // Handling bot
 bot.on('text', async (ctx) => {
   const chatText = ctx.message.text;
-  console.log('=> TBXMINER SIGNAL FORWARDER READY <==');
+  log(chalk.yellow('=> TBXMINER SIGNAL FORWARDER READY <=='));
+
+  // clear entrys console.table
+  entrys.length = 0;
 
   // Extract symbol and action
   const symbol = extractSymbol(chatText);
@@ -61,10 +69,12 @@ bot.on('text', async (ctx) => {
 
   // Reverse the entry array when the action is "SELL"
   const entries = (action === 'SELL') ? generateReverseEntries(entryLow, entryStep, config.entryCount) : generateEntries(entryLow, entryStep, config.entryCount);
-
   // Generate and send messages
   const messages = generateMessages(action, symbol, entries, tp1, sl, entryLotSize);
-  sendMessages(messages, config.channelUsername, config.broadcast);
+
+  console.table(entrys);
+
+  sendMessages(messages, config.channelUsername, config.broadcast, entries);
 });
 
 // Extract symbol from chat text
@@ -204,6 +214,7 @@ function generateReverseEntries(entryLow, entryStep, entryCount) {
 // Generates the messages
 function generateMessages(action, symbol, entries, tp1, sl, entryLotSize) {
   const messages = [];
+  let msg = [];
 
   for (let i = 0; i < entries.length; i++) {
     const entryPrice = entries[i];
@@ -234,12 +245,33 @@ function generateMessages(action, symbol, entries, tp1, sl, entryLotSize) {
       message = `${symbol} ${action} LIMIT @${entryWithSpreads.toFixed(2)}\n`
                 + `LOT: ${entryLotSize.toFixed(2)}\n`
                 + `TP: ${tpWithSpreads.toFixed(2)}\n`
-                + `SL: ${slWithSpreads}`;
+                + `SL: ${slWithSpreads.toFixed(2)}`;
+
+      // for logging
+      entrys.push({
+        'symbol': symbol,
+        'action': action,
+        'entry': entryWithSpreads.toFixed(2),
+        'lot': entryLotSize.toFixed(2),
+        'tp': tpWithSpreads.toFixed(2),
+        'sl': slWithSpreads.toFixed(2)
+      });
+          
     } else {
       message = `${symbol} ${action} LIMIT @${parseFloat(entryPrice).toFixed(2)}\n`
                 + `LOT: ${entryLotSize.toFixed(2)}\n`
                 + `TP: ${entryTP.toFixed(2)}\n`
-                + `SL: ${sl}`;
+                + `SL: ${parseFloat(sl).toFixed(2)}`;
+
+      // for logging
+      entrys.push({
+        'symbol': symbol,
+        'action': action,
+        'entry': parseFloat(entryPrice).toFixed(2),
+        'lot': entryLotSize.toFixed(2),
+        'tp': entryTP.toFixed(2),
+        'sl': parseFloat(sl).toFixed(2)
+      });
     }
 
 
@@ -252,8 +284,8 @@ function generateMessages(action, symbol, entries, tp1, sl, entryLotSize) {
 // Sends the messages
 function sendMessages(messages, channelUsername, broadcast) {
   for (const message of messages) {
-    console.log('======');
-    console.log(message);
+    // log(chalk.yellow('======'));
+    // console.table(entries);
     // console.log(message.replace("\n", " "));
 
     if (broadcast) {
