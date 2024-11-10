@@ -1,6 +1,5 @@
 const tls = require('tls');
 const { Telegraf } = require('telegraf');
-const chalk = require('chalk');
 require('dotenv').config();
 
 const log = console.log;
@@ -31,15 +30,15 @@ let entrys = [];
 
 // Start command handler
 bot.command('start', ctx => {
-  log(chalk.green.bold('Bot Started!'));
-  log(chalk.blue('User: ', ctx.from));
+  console.log('Bot Started!');
+  console.log('User: ', ctx.from);  
   bot.telegram.sendMessage(ctx.chat.id, 'Hello!, I am TBXMINER BOT that will forwarded your signal', {});
 });
 
 // Handling bot
 bot.on('text', async (ctx) => {
   const chatText = ctx.message.text;
-  log(chalk.yellow('=> TBXMINER SIGNAL FORWARDER READY <=='));
+  console.log('=> TBXMINER SIGNAL FORWARDER READY <==');
 
   // clear entrys console.table
   entrys.length = 0;
