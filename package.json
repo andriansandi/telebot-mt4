@@ -10,6 +10,7 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "axios": "^1.7.7",
     "dotenv": "^16.3.1",
     "metaapi.cloud-sdk": "^23.3.3",
     "nodemon": "^3.0.1",

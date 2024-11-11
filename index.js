@@ -280,18 +280,24 @@ function generateMessages(action, symbol, entries, tp1, sl, entryLotSize) {
   return messages;
 }
 
-// Sends the messages
-function sendMessages(messages, channelUsername, broadcast) {
-  for (const message of messages) {
-    // log(chalk.yellow('======'));
-    // console.table(entries);
-    // console.log(message.replace("\n", " "));
+// Fungsi untuk memberikan delay
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
+// Fungsi untuk mengirim pesan dengan delay
+async function sendMessages(messages, channelUsername, broadcast) {
+  let i = 1;
+  for (const message of messages) {
+    console.log('-------');
+    console.log("ENTRY " + i);
+    console.log("-------");
+    console.log(message);
+    i++;
     if (broadcast) {
-      // console.log('BROADCAST ENABLED');
-      bot.telegram.sendMessage(channelUsername, message);
-    } else {
-      // console.log('BROADCAST DISABLED');
+      await bot.telegram.sendMessage(channelUsername, message);
+      // Tambahkan delay 1 detik (1000 ms) antara pengiriman pesan
+      await sleep(10000); // Sesuaikan delay sesuai kebutuhan (dalam milidetik)
     }
   }
 }
