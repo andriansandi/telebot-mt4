@@ -1,8 +1,8 @@
 const tls = require('tls');
 const { Telegraf } = require('telegraf');
-require('dotenv').config();
+const axios = require('axios');
 
-const log = console.log;
+require('dotenv').config();
 
 // Increase the maximum number of listeners for TLSSocket
 tls.DEFAULT_MAX_LISTENERS = 20;
@@ -69,7 +69,7 @@ bot.on('text', async (ctx) => {
   // Reverse the entry array when the action is "SELL"
   const entries = (action === 'SELL') ? generateReverseEntries(entryLow, entryStep, config.entryCount) : generateEntries(entryLow, entryStep, config.entryCount);
   // Generate and send messages
-  const messages = generateMessages(action, symbol, entries, tp1, sl, entryLotSize);
+  const messages = await generateMessages(action, symbol, entries, tp1, sl, entryLotSize);
 
   console.table(entrys);
 
@@ -211,9 +211,11 @@ function generateReverseEntries(entryLow, entryStep, entryCount) {
 }
 
 // Generates the messages
-function generateMessages(action, symbol, entries, tp1, sl, entryLotSize) {
+async function generateMessages(action, symbol, entries, tp1, sl, entryLotSize) {
   const messages = [];
-  let msg = [];
+
+  // get the xauusd price
+  // const xauusdPrice = await getXAUUSDPrice();
 
   for (let i = 0; i < entries.length; i++) {
     const entryPrice = entries[i];
@@ -299,6 +301,29 @@ async function sendMessages(messages, channelUsername, broadcast) {
       // Tambahkan delay 1 detik (1000 ms) antara pengiriman pesan
       await sleep(10000); // Sesuaikan delay sesuai kebutuhan (dalam milidetik)
     }
+  }
+}
+
+// Fetch XAU/USD price using GoldAPI with axios
+async function getXAUUSDPrice() {
+  try {
+    const response = await axios.get('https://www.goldapi.io/api/XAU/USD', {
+      headers: {
+        'x-access-token': 'goldapi-47tbasm3cikvtp-io', // Replace with your actual token
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = response.data;
+    if (data && data.price) {
+      console.log(`Current XAU/USD Price: ${data.price}`);
+      return data.price;
+    } else {
+      console.error('Unable to retrieve price data:', data);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching XAU/USD price:', error);
+    return null;
   }
 }
 
