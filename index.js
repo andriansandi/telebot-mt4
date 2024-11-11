@@ -299,7 +299,7 @@ async function sendMessages(messages, channelUsername, broadcast) {
     if (broadcast) {
       await bot.telegram.sendMessage(channelUsername, message);
       // Tambahkan delay 1 detik (1000 ms) antara pengiriman pesan
-      await sleep(10000); // Sesuaikan delay sesuai kebutuhan (dalam milidetik)
+      await sleep(20000); // Sesuaikan delay sesuai kebutuhan (dalam milidetik)
     }
   }
 }
